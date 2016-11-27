@@ -1,0 +1,21 @@
+{
+  "name": "application-name",
+  "version": "0.0.1",
+  "description": "simple nodejs application that fetches tweets from twitter api and pushes them into aws elasticsearch domain",
+  "main": "server.js",
+  "dependencies": {
+    "aws-sdk":"*",
+    "elasticsearch": "^11.0.1",
+    "q": "^1.4.1",
+    "request": "*",
+    "twit": ">=1.1",
+    "http":"*",
+    "watson-developer-cloud":"*"
+  },
+  "scripts": {
+    "test": "node server.js"
+  },
+  "author": "Aditya Kaushal",
+  "license": "ISC"
+}
+

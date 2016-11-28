@@ -41,54 +41,63 @@ var recParams = {
             console.log(err);
         }// an error occurred
         else {
-            var fetchedText = JSON.parse(data.Messages[0].Body);
-            console.log("Fetched: ",JSON.parse(data.Messages[0].Body));
-            process.nextTick(loop);
+            try {
+                var fetchedText = JSON.parse(data.Messages[0].Body);
 
-            var alchemyParams = {
-                text: fetchedText.text,
-                outputMode: 'json',
-                showSourceText: 1   };
+                console.log("Fetched: ", JSON.parse(data.Messages[0].Body));
+                process.nextTick(loop);
 
-            console.log("Doing Sentimental Analysis now...\n");
-            alchemy_language.sentiment(alchemyParams, function (err, response) {
-                if (err) {
-                    console.log("Alchemy Error Occured...Moving on to next tweet\n"+JSON.stringify(err)); // an error occurred
+                var alchemyParams = {
+                    text: fetchedText.text,
+                    outputMode: 'json',
+                    showSourceText: 1
+                };
 
-                }
-                else {
-                    var sentiment = JSON.parse(JSON.stringify(response)).docSentiment;
-                    // console.log(sentiment);
-                    var httpMessage = {
-                        "username": fetchedText.username,
-                        "text": fetchedText.text,
-                        "location": JSON.stringify(fetchedText.location.coordinates),
-                        "sentiment": JSON.stringify(sentiment.type)
-                    };
-                    console.log(httpMessage);
-                    var message = {
-                        "default":"Message from Aditya",
-                        "http": httpMessage
-                    };
-                    var SNSParams = {
-                        Message: JSON.stringify(message),
-                        MessageStructure: 'json',
-                        TopicArn: topicArn
+                console.log("Doing Sentimental Analysis now...\n");
+                alchemy_language.sentiment(alchemyParams, function (err, response) {
+                    if (err) {
+                        console.log("Alchemy Error Occured...Moving on to next tweet\n" + JSON.stringify(err)); // an error occurred
+                        process.nextTick(loop);
+                    }
+                    else {
+                        var sentiment = JSON.parse(JSON.stringify(response)).docSentiment;
+                        sentiment = sentiment.type;
 
-                    };
-                    sns.publish(SNSParams, function(err, data) {
-                        if (err) console.log(err, err.stack); // an error occurred
-                        else     {
-                            console.log(data);           // successful response
-                            console.log("SNS Params: "+SNSParams.Message);
-                            process.nextTick(loop);
-                        }
+                        // console.log(sentiment);
+                        /* var httpMessage = {
+                         "username": fetchedText.username,
+                         "text": fetchedText.text,
+                         "location": JSON.stringify(fetchedText.location.coordinates),
+                         "sentiment": JSON.stringify(sentiment.type)
+                         };
+                         console.log(httpMessage);*/
+                        var message = {
+                            "default": `{"username": "${fetchedText.username}", "text": "${fetchedText.text}", "location": ${JSON.stringify(fetchedText.location)}, "sentiment": ${JSON.stringify(sentiment)}}`,
+                            "http": `{"username": "${fetchedText.username}", "text": "${fetchedText.text}", "location": ${JSON.stringify(fetchedText.location)}, "sentiment": ${JSON.stringify(sentiment)}}`
+                        };
+                        var SNSParams = {
+                            Message: JSON.stringify(message),
+                            MessageStructure: 'json',
+                            TopicArn: topicArn
 
-                    });
+                        };
+                        sns.publish(SNSParams, function (err, data) {
+                            if (err) console.log(err, err.stack); // an error occurred
+                            else {
+                                console.log(data);           // successful response
+                                console.log("SNS Params: " + SNSParams.toString());
+                                process.nextTick(loop);
+                            }
 
-                }
+                        });
 
-            });
+                    }
+
+                });
+            }
+            catch (e){
+
+            }
         }
     });
 

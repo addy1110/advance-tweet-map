@@ -7,7 +7,7 @@ var app = express();
 app.use(express.static(__dirname + '/public'));
 
 
-require("./Subscribe.js");
+// require("./setUpSNS.js");
 
 var port = 8081;
 var server = app.listen(port, function(){

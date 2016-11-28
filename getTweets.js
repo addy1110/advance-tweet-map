@@ -4,7 +4,7 @@ var fs = require("fs"),
     Twit = require('twit');
 var AWS = require('aws-sdk');
 
-AWS.config.update({region: 'us-west-1'});
+AWS.config.update({region: 'us-east-1'});
 var AWSaccessKey = options.storageConfig.aws_access_key_id;
 var secretAccessKey = options.storageConfig.aws_secret_access_key;
 
@@ -43,7 +43,7 @@ stream.on('error',function(error){
     throw error
 });
 stream.on('tweet', function(tweet) {
-    if (tweet.geo !=null){
+    if ((tweet.geo !=null) && (tweet.text.lang = "en")){
         count+=1;
         console.log("tweets counted:"+count+" tweet: "+tweet.text);
         var obj = {

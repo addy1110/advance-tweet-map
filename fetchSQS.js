@@ -23,7 +23,7 @@ var alchemy_language = watson.alchemy_language({
 });
 
 var recParams = {
-    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/829344914533/tweet-map-processor', /* required */
+    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/829344914533/tweet-processor', /* required */
     MaxNumberOfMessages: 1,
     AttributeNames: [
         "All"
@@ -42,9 +42,10 @@ var recParams = {
         }// an error occurred
         else {
             try {
-                var fetchedText = JSON.parse(data.Messages[0].Body);
+                var sqsMessage = data.Messages[0];
+                var fetchedText = JSON.parse(sqsMessage.Body);
 
-                console.log("Fetched: ", JSON.parse(data.Messages[0].Body));
+                console.log("Fetched: ", JSON.parse(sqsMessage.Body));
                 process.nextTick(loop);
 
                 var alchemyParams = {
@@ -57,6 +58,13 @@ var recParams = {
                 alchemy_language.sentiment(alchemyParams, function (err, response) {
                     if (err) {
                         console.log("Alchemy Error Occured...Moving on to next tweet\n" + JSON.stringify(err)); // an error occurred
+                        sqs.deleteMessage({
+                            QueueUrl: 'https://sqs.us-east-1.amazonaws.com/829344914533/tweet-processor',
+                            ReceiptHandle: sqsMessage.ReceiptHandle
+                        }, function(err, data) {
+                            if(err) console.log(err, err.stack);
+                            else console.log("Message deleted")
+                        });
                         process.nextTick(loop);
                     }
                     else {
@@ -86,11 +94,18 @@ var recParams = {
                             else {
                                 console.log(data);           // successful response
                                 console.log("SNS Params: " + SNSParams.toString());
-                                process.nextTick(loop);
+
                             }
 
                         });
-
+                        sqs.deleteMessage({
+                            QueueUrl: 'https://sqs.us-east-1.amazonaws.com/829344914533/tweet-processor',
+                            ReceiptHandle: sqsMessage.ReceiptHandle
+                        }, function(err, data) {
+                            if(err) console.log(err, err.stack);
+                            else console.log("Message deleted")
+                        });
+                        process.nextTick(loop);
                     }
 
                 });

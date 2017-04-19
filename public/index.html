@@ -2,13 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Advance Tweet-map TweetMap</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Loading Bootstrap -->
-    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-
+    <title>Advance Tweet Map</title>
     <link href="css/map.css" rel="stylesheet">
 
 
@@ -20,10 +14,10 @@
 
 <div class="options-box">
     <div><h2 id="heading">TweetMap</h2>
-        <h2><b> Tweet Count: <span id ="count">  0 </span></b></h2></br>
+        <h2><b> Tweet Count: <span id ="count">  0 </span></b></h2><br>
     </div>
     <div class = 'select_style'>
-        <select id="ddlSearch" onchange="myFunction(value)">
+        <select class = 'box' id="ddlSearch" onchange="myFunction(value)">
             <option value="Select">--- Category ---</option>
             <option value="All">All</option>
             <option value="Election">Election</option>
@@ -41,106 +35,21 @@
 
 </div>
 
-
-
-
-
-
-
-
-
 <div id="map">
 
 </div>
 
-<script src="js/jquery-1.8.3.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-<script src="js/flatui-colorDrop.js"></script>
+
 <script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDeCUJIZb8D6bg2CbMa8kUMj7J5uDZEgOU">
 </script>
 <script>
-
-    /**
-     * Created by ADDY on 27/11/16.
-     */
-
-
-
-
-
-        /*(function ($, google) {
-
-
-            $('.btn-group').colorDrop({
-                onChange: function () {
-                    changeMapStyles(map);
-                }
-            });
-            $('#map').height($(window).height());
-            function changeMapStyles(map) {
-                var hueColor = '#e67e22',
-                    roadColor = '#d35400',
-                    waterColor = '#2980b9',
-                    parkColor = '#16a085',
-                    landscapeColor = '#bdc3c7';
-                var featureOpts = [
-                    {
-                        stylers: [
-                            {hue: hueColor}
-                        ]
-                    }, {
-                        elementType: "labels",
-                        stylers: [{
-                            visibility: "on"
-                        }]
-                    }, {
-                        featureType: "road",
-                        stylers: [{
-                            visibility: "on"
-                        }, {
-                            color: roadColor
-                        }]
-                    }, {
-                        featureType: "water",
-                        stylers: [{
-                            visibility: "on"
-                        }, {
-                            color: waterColor
-                        }]
-                    },
-                    {
-                        featureType: "poi"
-                        , stylers: [{
-                        visibility: "on"
-                    }, {
-                        color: parkColor
-                    }]
-                    },
-                    {
-                        featureType: "landscape",
-                        stylers: [{
-                            visibility: "on"
-                        }, {
-                            color: landscapeColor
-                        }]
-                    }
-                ];
-                map.setOptions({
-                    styles: featureOpts
-                });
-            }
-
-            changeMapStyles(map);
-        })(jQuery, google);*/
-
-        var map = new google.maps.Map(document.getElementById('map'), {
+    var map = new google.maps.Map(document.getElementById('map'), {
         center: {lat: 20, lng: -30},
         zoom: 3
-        });
-        var markers = [];
-        var hashTag = '';
-
+    });
+    var markers = [];
+    var hashTag = '';
     function myFunction(value) {
         console.log("You are in myFunction");
         setMapOnAll(null);
@@ -152,9 +61,7 @@
         function recursive_ajax_call() {
 
             $.ajax({
-                dataType: "text",
-                async: false,
-                url: 'http://ec2-52-87-227-167.compute-1.amazonaws.com:8080/' + value,
+                url: 'http://ec2-52-90-238-160.compute-1.amazonaws.com:8080/' + value,
                 success: function (data) {
                     data = JSON.parse(data);
                     //alert(data[0]._source.location.coordinates);
@@ -162,11 +69,11 @@
                     var infowindow = new google.maps.InfoWindow();
                     var contentString = '';
                     document.getElementById("count").innerHTML = data.length;
-                    var icons='';
+
+                    var icons = '';
                     for (i = 0; i < data.length; i++) {
                         try {
                             //console.log(data[i]._source.location.coordinates);
-
                             if (data[i]._source.sentiment == "positive") {
                                 icons = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
                             }
@@ -177,52 +84,36 @@
                                 icons = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
                             }
                             var latLng = new google.maps.LatLng(data[i]._source.location.coordinates[0], data[i]._source.location.coordinates[1]);
-
-                            contentString = "<b>Username:</b>" + data[i]._source.username + "<br><b>Tweet: </b>" + data[i]._source.text + "<br><b>Sentiment: </b>" +  data[i]._source.sentiment;
-
+                            contentString = "<b>Username:</b>" + data[i]._source.username + "<br><b>Tweet: </b>" + data[i]._source.text + "<br><b>Sentiment: </b>" + data[i]._source.sentiment;
                             // Creating a marker and putting it on the map
                             var marker = new google.maps.Marker({
                                 position: latLng,
                                 map: map,
                                 icon: icons,
                                 clickable: true,
-                                animation: google.maps.Animation.DROP,
+//                                animation: google.maps.Animation.DROP,
                                 content: contentString,
                                 title: "Location: " + JSON.stringify(data[i]._source.location.coordinates)
                             });
-
                             google.maps.event.addListener(marker, 'click', (function (marker, i) {
                                 return function () {
                                     infowindow.setContent(marker.content);
                                     infowindow.open(map, marker);
                                 }
                             })(marker, i));
-
                             //marker.setAnimation(google.maps.Animation.DROP);
                             markers.push(marker);
-
-
                         }
                         catch (e) {
                             console.log("Syntax Error: " + e);
                         }
                     }
-
                 }
-
             });
-//            setTimeout( recursive_ajax_call, 2000 );
+            setTimeout(recursive_ajax_call,2000);
         }
-
 //        showTweets();
-        /*FB.getLoginStatus(function(response) {
-         if (response.status === 'connected') {// logged in
-         refreshIntervalId = setInterval(showTweets,1000);
-         console.log('You are now logged in to Facebook.');
-         } else {
-         alert('Please Login to see LIVE tweets');
-         }
-         });*/
+
     }
     function setMapOnAll(map) {
         for (var i = 0; i < markers.length; i++) {
@@ -230,98 +121,9 @@
         }
     }
 
-    /*var showTweets = function() { //trying to fetch tweets from sqs.
-     var recParams = {
-     QueueUrl: 'https://sqs.us-east-1.amazonaws.com/829344914533/tweet-map-processor', /!* required *!/
-     MaxNumberOfMessages: 1,
-     AttributeNames: [
-     "All"
-     ],
-     /!* more items *!/
-     VisibilityTimeout: 60,
-     WaitTimeSeconds: 20
-     };
-
-     AWS.config.region = 'us-east-1';
-     var creds = new AWS.Credentials({
-     accessKeyId: "AKIAJTH7KJBQSHTCILBA", secretAccessKey: "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"
-     });
-     var sqs = new AWS.SQS({credentials: creds});
-     sqs.receiveMessage(recParams, function(err, data) {
-     if (err) console.log(err, err.stack); // an error occurred
-     else    {
-     try{
-     //console.log("Received "+JSON.stringify(data));
-     fetchedText = JSON.parse(data.Messages[0].Body);
-     fetchedText = JSON.parse(JSON.parse(fetchedText.Message).http);
-     var tweet = String(fetchedText.text);
-     console.log("Fetched: "+fetchedText.text);
-     console.log(tweet.indexOf(hashTag) > -1);
-     var latLng = new google.maps.LatLng(fetchedText.location.coordinates[0],fetchedText.location.coordinates[1]);
-
-     // Creating a marker and putting it on the map
-     if(tweet.indexOf(hashTag) > -1 )
-     {
-     contentString = "<b>Username:</b> "+fetchedText.username+"<br><b>Tweet: </b>"+fetchedText.text+"<br><b>Sentiment Score: </b>"+(fetchedText.sentiment.score*100).toFixed(2)+"% <i>"+fetchedText.sentiment.type+"</i>";
-     var infowindow = new google.maps.InfoWindow({
-     content: contentString
-     });
-     var marker = new google.maps.Marker({
-     position: latLng,
-     map: map,
-     clickable: true,
-     content: contentString,
-     title: "Location: "+fetchedText.location.coordinates
-     });
-     google.maps.event.addListener(marker, 'click', (function (marker) {
-     return function () {
-     infowindow.setContent(marker.content);
-     infowindow.open(map, marker);
-     }
-     })(marker));
-     if(fetchedText.sentiment.type == "positive") {
-     marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png')
-     }
-     else if(fetchedText.sentiment.type == "neutral") {
-     marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png')
-     }
-     else if(fetchedText.sentiment.type == "negative") {
-     marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png')
-     }
-     markers.push(marker);
-     marker.setAnimation(google.maps.Animation.DROP);
-     marker.setMap(map);
-     var count = document.getElementById("count").innerHTML;
-
-     var count = +count + +1;
-     document.getElementById("count").innerHTML =count;
-     }
-
-     }
-     catch(e){
-     console.log(e);
-     }
-     }
-     });
-
-     }*/
-
-
 </script>
-<!-- /#map -->
-<!--<script src="https://sdk.amazonaws.com/js/aws-sdk-2.3.6.min.js"></script>
-<script type="text/javascript">
-    // See the Configuring section to configure credentials in the SDK
-    // Configure your region
-    AWS.config.region = 'us-west-2';
-    var creds = new AWS.Credentials({
-        accessKeyId: "", secretAccessKey: ""
-    });
-</script>-->
 
-<!-- Load JS here for greater good =============================-->
-
-
+<script src="js/jquery-1.8.3.min.js"></script>
 
 </body>
 </html>

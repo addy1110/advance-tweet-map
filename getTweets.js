@@ -57,7 +57,7 @@ stream.on('tweet', function(tweet) {
         var sendParams = {
             MessageBody: JSON.stringify(obj),
             /* required */
-            QueueUrl: 'https://sqs.us-east-1.amazonaws.com/829344914533/tweet-map-processor', /* required */
+            QueueUrl: 'https://sqs.us-east-1.amazonaws.com/829344914533/tweet-processor', /* required */
             DelaySeconds: 0,
             MessageAttributes: {}
         };

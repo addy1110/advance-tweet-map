@@ -7,7 +7,7 @@ var app = express();
 app.use(express.static(__dirname + '/public'));
 
 
-// require("./setUpSNS.js");
+// require("./saviour.js")(app);
 
 var port = 8081;
 var server = app.listen(port, function(){
